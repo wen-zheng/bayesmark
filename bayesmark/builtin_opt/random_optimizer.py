@@ -33,7 +33,7 @@ class RandomOptimizer(AbstractOptimizer):
         AbstractOptimizer.__init__(self, api_config)
         self.random = random
 
-    def suggest(self, n_suggestions=1):
+    def suggest(self, n_suggestions=1, next_trial_api_config=None):
         """Get suggestion.
 
         Parameters
@@ -51,7 +51,7 @@ class RandomOptimizer(AbstractOptimizer):
         x_guess = rs.suggest_dict([], [], self.api_config, n_suggestions=n_suggestions, random=self.random)
         return x_guess
 
-    def observe(self, X, y):
+    def observe(self, X, y, next_trial_api_config=None):
         """Feed an observation back.
 
         Parameters

@@ -172,7 +172,7 @@ class HyperoptOptimizer(AbstractOptimizer):
         new_trial, = new_trials  # extract singleton
         return new_trial
 
-    def suggest(self, n_suggestions=1):
+    def suggest(self, n_suggestions=1, next_trial_api_config=None):
         """Make `n_suggestions` suggestions for what to evaluate next.
 
         This requires the user observe all previous suggestions before calling
@@ -209,7 +209,7 @@ class HyperoptOptimizer(AbstractOptimizer):
         assert len(X) == n_suggestions
         return X
 
-    def observe(self, X, y):
+    def observe(self, X, y, next_trial_api_config=None):
         """Feed the observations back to hyperopt.
 
         Parameters

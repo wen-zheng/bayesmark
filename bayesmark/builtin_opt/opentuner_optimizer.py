@@ -238,7 +238,7 @@ class OpentunerOptimizer(AbstractOptimizer):
             manipulator.add_parameter(ot_param)
         return manipulator
 
-    def suggest(self, n_suggestions=1):
+    def suggest(self, n_suggestions=1, next_trial_api_config=None):
         """Make `n_suggestions` suggestions for what to evaluate next.
 
         This requires the user observe all previous suggestions before calling
@@ -302,7 +302,7 @@ class OpentunerOptimizer(AbstractOptimizer):
             self.dummy_suggest = X[-1]
         return X
 
-    def observe(self, X, y):
+    def observe(self, X, y, next_trial_api_config=None):
         """Feed the observations back to opentuner.
 
         Parameters

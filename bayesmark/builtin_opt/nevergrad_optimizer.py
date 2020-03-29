@@ -143,7 +143,7 @@ class NevergradOptimizer(AbstractOptimizer):
             xx[arg_name] = vv
         return xx
 
-    def suggest(self, n_suggestions=1):
+    def suggest(self, n_suggestions=1, next_trial_api_config=None):
         """Get suggestion from nevergrad.
 
         Parameters
@@ -168,7 +168,7 @@ class NevergradOptimizer(AbstractOptimizer):
 
         return x_guess
 
-    def observe(self, X, y):
+    def observe(self, X, y, next_trial_api_config=None):
         """Feed an observation back to nevergrad.
 
         Parameters

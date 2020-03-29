@@ -49,16 +49,17 @@ class ScikitOptimizer(AbstractOptimizer):
 
         # Undecided where we want to pass the kwargs, so for now just make sure
         # they are blank
-        assert len(kwargs) == 0
+#         assert len(kwargs) == 0
 
         self.skopt = SkOpt(
             dimensions,
             n_initial_points=n_initial_points,
             base_estimator=base_estimator,
             acq_func=acq_func,
-            acq_optimizer="auto",
+            acq_optimizer="lbfgs",
             acq_func_kwargs={},
             acq_optimizer_kwargs={},
+            random_state=1,
         )
 
     @staticmethod
@@ -113,7 +114,7 @@ class ScikitOptimizer(AbstractOptimizer):
                 assert False, "type %s not handled in API" % param_type
         return sk_dims, round_to_values
 
-    def suggest(self, n_suggestions=1):
+    def suggest(self, n_suggestions=1, next_trial_api_config=None):
         """Get a suggestion from the optimizer.
 
         Parameters
@@ -129,18 +130,40 @@ class ScikitOptimizer(AbstractOptimizer):
             corresponds to a parameter being optimized.
         """
         # First get list of lists from skopt.ask()
-        next_guess = self.skopt.ask(n_points=n_suggestions)
-        # Then convert to list of dicts
-        next_guess = [dict(zip(self.dimensions_list, x)) for x in next_guess]
+        if next_trial_api_config is not None:
+            dimensions_temp, round_to_values_temp = ScikitOptimizer.get_sk_dimensions(next_trial_api_config)
+            skopt_temp = SkOpt(
+                dimensions_temp,
+            )
+            next_trial_space = skopt_temp.space
+            next_guess = self.skopt.ask(n_points=n_suggestions, next_trial_space=next_trial_space)
+            if n_suggestions is None:
+                next_guess = [next_guess]
+            # Then convert to list of dicts
+            next_guess = [dict(zip(self.dimensions_list, x)) for x in next_guess]
 
-        # Now do the rounding, custom rounding is not supported in skopt. Note
-        # that there is not nec a round function for each dimension here.
-        for param_name, round_f in self.round_to_values.items():
-            for xx in next_guess:
-                xx[param_name] = round_f(xx[param_name])
-        return next_guess
+            # Now do the rounding, custom rounding is not supported in skopt. Note
+            # that there is not nec a round function for each dimension here.
+            for param_name, round_f in self.round_to_values.items():
+                for xx in next_guess:
+                    xx[param_name] = round_f(xx[param_name])
+            return next_guess
+        else:
+            next_guess = self.skopt.ask(n_points=n_suggestions)
+            # print('-------------------\n', next_guess,'\n-----------------')
+            if n_suggestions is None:
+                next_guess = [next_guess]
+            # Then convert to list of dicts
+            next_guess = [dict(zip(self.dimensions_list, x)) for x in next_guess]
 
-    def observe(self, X, y):
+            # Now do the rounding, custom rounding is not supported in skopt. Note
+            # that there is not nec a round function for each dimension here.
+            for param_name, round_f in self.round_to_values.items():
+                for xx in next_guess:
+                    xx[param_name] = round_f(xx[param_name])
+            return next_guess
+
+    def observe(self, X, y, next_trial_api_config=None):
         """Send an observation of a suggestion back to the optimizer.
 
         Parameters
@@ -154,12 +177,22 @@ class ScikitOptimizer(AbstractOptimizer):
         """
         # Supposedly skopt can handle blocks, but not sure about interface for
         # that. Just do loop to be safe for now.
-        for xx, yy in zip(X, y):
-            # skopt needs lists instead of dicts
-            xx = [xx[dim_name] for dim_name in self.dimensions_list]
-            # Just ignore, any inf observations we got, unclear if right thing
-            if np.isfinite(yy):
-                self.skopt.tell(xx, yy)
-
-
-opt_wrapper = ScikitOptimizer
+        if next_trial_api_config is not None:
+            dimensions_temp, round_to_values_temp = ScikitOptimizer.get_sk_dimensions(next_trial_api_config)
+            skopt_temp = SkOpt(
+                dimensions_temp,
+            )
+            next_trial_space = skopt_temp.space
+            for xx, yy in zip(X, y):
+                # skopt needs lists instead of dicts
+                xx = [xx[dim_name] for dim_name in self.dimensions_list]
+                # Just ignore, any inf observations we got, unclear if right thing
+                if np.isfinite(yy):
+                    self.skopt.tell(xx, yy, next_trial_space=next_trial_space)
+        else:
+            for xx, yy in zip(X, y):
+                # skopt needs lists instead of dicts
+                xx = [xx[dim_name] for dim_name in self.dimensions_list]
+                # Just ignore, any inf observations we got, unclear if right thing
+                if np.isfinite(yy):
+                    self.skopt.tell(xx, yy)

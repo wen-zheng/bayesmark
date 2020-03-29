@@ -82,7 +82,7 @@ class PySOTOptimizer(AbstractOptimizer):
             use_restarts=True,
         )
 
-    def suggest(self, n_suggestions=1):
+    def suggest(self, n_suggestions=1, next_trial_api_config=None):
         """Get a suggestion from the optimizer.
 
         Parameters
@@ -141,7 +141,7 @@ class PySOTOptimizer(AbstractOptimizer):
         self.proposals.pop(i)
         self.history.pop(i)
 
-    def observe(self, X, y):
+    def observe(self, X, y, next_trial_api_config=None):
         """Send an observation of a suggestion back to the optimizer.
 
         Parameters
