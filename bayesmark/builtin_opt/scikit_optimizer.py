@@ -196,3 +196,5 @@ class ScikitOptimizer(AbstractOptimizer):
                 # Just ignore, any inf observations we got, unclear if right thing
                 if np.isfinite(yy):
                     self.skopt.tell(xx, yy)
+
+opt_wrapper = ScikitOptimizer
