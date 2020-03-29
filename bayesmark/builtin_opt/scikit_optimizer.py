@@ -22,7 +22,16 @@ from bayesmark.abstract_optimizer import AbstractOptimizer
 class ScikitOptimizer(AbstractOptimizer):
     primary_import = "scikit-optimize"
 
-    def __init__(self, api_config, base_estimator="GP", acq_func="gp_hedge", n_initial_points=5, **kwargs):
+    def __init__(self, api_config, base_estimator="gp",
+                 n_random_starts=None, n_initial_points=10,
+                 initial_point_generator="random",
+                 n_jobs=1, acq_func="gp_hedge",
+                 acq_optimizer="auto",
+                 random_state=None,
+                 model_queue_size=None,
+                 space_size=-1,
+                 acq_func_kwargs=None,
+                 acq_optimizer_kwargs=None, **kwargs):
         """Build wrapper class to use an optimizer in benchmark.
 
         Parameters
@@ -53,13 +62,16 @@ class ScikitOptimizer(AbstractOptimizer):
 
         self.skopt = SkOpt(
             dimensions,
-            n_initial_points=n_initial_points,
             base_estimator=base_estimator,
-            acq_func=acq_func,
-            acq_optimizer="lbfgs",
-            acq_func_kwargs={},
-            acq_optimizer_kwargs={},
-            random_state=1,
+            n_random_starts=n_random_starts, n_initial_points=n_initial_points,
+            initial_point_generator=initial_point_generator,
+            n_jobs=n_jobs, acq_func=acq_func,
+            acq_optimizer=acq_optimizer,
+            random_state=random_state,
+            model_queue_size=model_queue_size,
+            space_size=space_size,
+            acq_func_kwargs=acq_func_kwargs,
+            acq_optimizer_kwargs=acq_optimizer_kwargs,
         )
 
     @staticmethod
